@@ -1,0 +1,361 @@
+%% BioMed_Central_Tex_Template_v1.06
+%%                                      %
+%  bmc_article.tex            ver: 1.06 %
+%                                       %
+
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\documentclass[10pt]{bmc_article}    
+
+% Load packages
+\usepackage{cite} % Make references as [1-4], not [1,2,3,4]
+\usepackage{url}  % Formatting web addresses  
+\usepackage{ifthen}  % Conditional 
+\usepackage{multicol}   %Columns
+\usepackage[utf8]{inputenc} %unicode support
+\urlstyle{rm}
+
+\usepackage{color}
+\newcommand\rmq[1]{{\sffamily\color{blue} \emph{#1}}}
+
+\def\includegraphic{}
+\def\includegraphics{}
+
+\setlength{\topmargin}{0.0cm}
+\setlength{\textheight}{21.5cm}
+\setlength{\oddsidemargin}{0cm} 
+\setlength{\textwidth}{16.5cm}
+\setlength{\columnsep}{0.6cm}
+
+\newboolean{publ}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                              %%
+%% You may change the following style settings  %%
+%% Should you wish to format your article       %%
+%% in a publication style for printing out and  %%
+%% sharing with colleagues, but ensure that     %%
+%% before submitting to BMC that the style is   %%
+%% returned to the Review style setting.        %%
+%%                                              %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+
+%Review style settings
+%\newenvironment{bmcformat}{\begin{raggedright}\baselineskip20pt\sloppy\setboolean{publ}{false}}{\end{raggedright}\baselineskip20pt\sloppy}
+
+%Publication style settings
+\newenvironment{bmcformat}{\fussy\setboolean{publ}{true}}{\fussy}
+
+%New style setting
+%\newenvironment{bmcformat}{\baselineskip20pt\sloppy\setboolean{publ}{false}}{\baselineskip20pt\sloppy}
+
+\begin{document}
+\begin{bmcformat}
+
+\title{BiWeb : a common framework to facilitate the analysis of bipartite networks}
+ 
+\author{Timoth\'ee Poisot\correspondingauthor$^{1,2}$%
+         \email{Timoth\'ee Poisot\correspondingauthor - timothee.poisot@uqar.ca}
+       \and 
+        Cesar Flores$^3$%
+         \email{Cesar Flores - \textcolor{red}{cesar.flores@gatech.edu}}%
+       \and 
+        Sergi Valverde$^4$%
+         \email{Sergi Valverde - \textcolor{red}{svalver@gmail.com}}%
+         \and
+        Joshua S Weitz$^{3,5}$%
+         \email{Joshua S Weitz - \textcolor{red}{jsweitz@gatech.edu}}%
+      }
+      
+
+\address{%
+    \iid(1) UQAR\\
+    \iid(2) Qu\'ebec Centre for Biodiversity Science\\
+    \iid(3) \textcolor{red}{School of Physics, Georgia Institute of Technology, Atlanta, GA 30332}\\
+    \iid(4) \textcolor{red}{Universitat Pompeu Fabra, Barcelona, Spain}\\
+    \iid(5) \textcolor{red}{School of Biology, Georgia Institute of Technology, Atlanta, GA 30332}    
+}%
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                          %%
+%% The Abstract begins here                 %%
+%%                                          %%  
+%% Please refer to the Instructions for     %%
+%% authors on http://www.biomedcentral.com  %%
+%% and include the section headings         %%
+%% accordingly for your article type.       %%   
+%%                                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{abstract}
+  Almost all ecological interactions can be represented as networks. The
+  structure of this network holds much information about the ecological
+  mechanisms acting in communities, and can help predict their evolutionary
+  responses. However, there is a large number of different metrics for the
+  same property, which makes it difficult for people to get started with these
+  analyses. In this paper, we describe two open-source packages, one in
+  Octave/MatLab and one in Python, to perform the most standard analyses in a
+  straigthforward way.
+\end{abstract}
+
+\ifthenelse{\boolean{publ}}{\begin{multicols}{2}}{}
+
+%%%%%%%%%%%%%%%%
+%% Background %%
+%%
+
+\section*{Background}
+
+Viewing species interaction as a network is an efficient way to reduce their
+inherent complexity to an object that is mathematically analyzable
+\cite{Proulx2005,Dunne2006}. Among them, bipartite graphs \cite{Chartrand1985}
+are especially suited to the analysis of systems in which two distinct sets of
+organisms are interacting. Although an abundant literature on plant--pollinators
+systems emerged around the use of these networks
+\cite{Bascompte2007,Stouffer2011,Bascompte2003,Bastolla2009,Joppa2009}, they
+are with a few exceptions \cite{Thebault2008,Thebault2010} less frequently
+used to analyze antagonistic interactions \cite{Poulin2010}. Recent work
+emphasized that viewing antagonistic interactions as being bipartite networks
+allowed to look at emerging properties of these systems, including how they
+reacted to changes in environmental quality
+\cite{PoisotBL2011,PoisotPRSLB2011}, and how their structure relates to
+ecological and evolutionary mechanisms \cite{Flores2011}. To some extent, the
+lack of widespread use of these methods can be explained by two factors.
+First, thinking in terms of networks requires to gain familiarity with a new
+literature and nomenclature, which can be daunting, although recent papers
+made a great effort of ``translating'' the different notions from one field to
+another \cite{Poulin2010}. Second, the analysis of bipartite networks can be
+an intense task from a computational point of view, and out of the multiple
+methods existing to measure a given property, not all are publicly available
+or easily usable. Additionaly, several groups often independently developed
+different metrics for the same property of a network, and choosing the most
+robust or meaningful one is a difficult task for peopke unfamiliar with the
+litterature. The goal of this paper is to provide a toolbox for ecologists
+wanting to analyze bipartite networks. We propose an implementation of this
+toolbox in two languages, Python and MatLab.
+
+\section*{Implementation}
+
+We propose two alternative implementations of the toolbox, \texttt{biweb-ml}
+(MatLab/Octave) and \texttt{biweb-py} (Python). Our toolbox allows the
+estimation of nestedness and modularity, using two robust estimators, along
+with ways of network visualization allowing to reflect both properties. It is
+assumed that data come in matrix shape, with organisms of the upper level as
+rows, and organisms of the lower levels as columns. The matrix can be filled
+with either 0 and 1 (adjacency matrix), or with numerical values indicating
+the strength of the pairwise interaction: $\mathbf{M}_{ij}$ is the strength of
+the interaction between species $i$ and species $j$. However, some of the
+available analysis work only with boolean matrices (i.e. nestedness,
+modularity). In these cases the boolean version of $\mathbf{M}$ is used. For
+any kind of matrix input, all rows and columns that contain only zeros are
+deleted before any type of analysis.
+
+For each property, as detailed in the following paragraphs, only one measure
+was selected. This is intended to facilitate the analysis, as while
+contrasting the results of two different metrics can be interesting in some
+situations, it risks confusings people not interested by network theory. The
+metrics to include were selected based on a litterature review and tests using
+datasets either public or gathered by the authors.
+
+\subsection*{Measures}
+
+Nestedness is measured using \textsc{nodf} \cite{Almeida-Neto2008}, which is a
+robust algorithm, insensitive to network shape (i.e. asymmetry in the number
+of species at each level) and shape (i.e. number of species in the whole
+network). Nestedness is measured for the whole network, and separately for
+each of the levels.
+
+Bipartite modularity is estimated using the \textsc{lp-brim} method
+\cite{Liu2010a}, which optimizes Barber's modularity
+\cite{Barber2007,Barber2008} in a short time. With this method, best results
+are achieved by selecting the optimal solution of a large number of runs. In
+addition to reporting Barber's $Q_{bip}$, we propose an additional measure
+termed the realized modularity, noted $Q_{R}$. This measure reflects the
+\emph{a posteriori} goodness of the division of the networks in modules, and
+is calculated by dividing the number of interactions established by species
+belonging to the same module by the total number of interactions in the
+network. If all links are established by species belonging to the same module,
+then $Q_{R} = 1$, reflecting the perfect modularity. If there are as many
+links established between and within modules, then $Q_{R}$ takes its minimal
+value of $1/2$. Note that due to this, $Q_{R}$ can be ranged in $[0,1]$, with
+$Q'_{R} = 2\times Q_{R}-1$.
+
+We also implement several ``species-level'' metrics. These include generalitty
+and vulnerability \cite{Schoener1979}, specificity as measured with (\emph{PDI}) and without
+(\emph{RR}) link strength \cite{PoisotMEE2011}, and the Species-
+Specialization Index \cite{Julliard2006}. In addition, when the analysis to
+measure modularity has been done, the module to which each species belong is
+recorded.
+
+\subsection*{Null models}
+
+We propose four null models allowing to test the significancy of the value of
+nestedness and modularity (see \cite{Bascompte2003,Ulrich2007,Flores2011} for
+more details), working by generating random networks through a Bernoulli
+process, where the probability of interactions are determined following
+different rules. If $\mathbf{V}$ and $\mathbf{G}$ are vectors with the number
+of interactions respectively received by lower level species, and established
+by upper level species, $L$ is the number of interactions in the network, and
+$l$ and $u$ are respectively the number of species at the lower and upper
+levels, then the probability of two species having an interaction in the
+random network, $P_{ij}$, is
+
+\begin{description}
+  \item[in model 1], $P_{ij} = L/(ul)$ -- the connectance of the network is respected, but not the number. of interactions in which each species is involved.  \item[in model 2], $P_{ij} = (G_{i}/l + V_{j}/u)/2$ -- the connectance, and the number of interactions in which each species is involved, are respected
+  \item[in model 3r], $P_{ij} = G_{i}/l$ -- the connectance, and the number of interactions of species at the upper level, are respected
+  \item[in model 3c], $P_{ij} = V_{j}/u$ -- the connectance, and the number of interactions of species at the lower level, are respected
+\end{description}
+
+We impose the additional constraint that in the random network, no species can
+be left with no interaction at the end of the randomization process, so that
+only networks of the same size and shape are generated through this process.
+For each null model, the original value of each measure (\emph{e.g.}
+\textsc{nodf}) is measured on the observed network, and assigned a value $N$.
+For all of the replicates, the randomized value of the measure ($N'$) is
+calculated. Once this is done for all replicates, we use the distribution of
+absolute differences $N-N'$, and use a one-sample t-test to assess whether its
+mean is significantly different from 0.
+
+\subsection*{Visualization}
+
+\section*{Results}
+
+- FIG 1a convergence time number of runs null models\\
+- FIG 1b convergence time number of runs modularity
+
+- FIG 2  Different representations web
+
+- TAB 1  species level
+
+- TAB 1  network-level
+
+
+\section*{Conclusions}
+
+\section*{Availability \& requirements}
+
+The following section lists the informations and modalities of use of the different packages.
+
+\textbf{Project name:} biweb\\
+\textbf{Project home:} http://www.github.com/tpoisot/biweb\\
+\textbf{Operating system(s):} Platform independent\\
+\textbf{Programming language:} MatLab, Octave, Python\\
+\textbf{Other requirements:} Python 2.6 or higher, LaTeX, and the following packages: \emph{pp}, \emph{numpy}, \emph{scipy}, \emph{pyx}\\
+\textbf{Licence:} GNU GPL\\
+\textbf{Restrictions to use:} Papers using this package should cite the present publication
+
+\bigskip
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Author's contributions}
+Developped the software: TP, CF. Conceived the study: TP, CF, SV, JSW. Analyzed the results: TP, CF. All authors contributed to the redaction of the paper.    
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Acknowledgements}
+  \ifthenelse{\boolean{publ}}{\small}{}
+  TP is supported by a MELS-FQRNT post-doctoral scholarship. The Canadian Research Chair on Continental Ecosystems Ecology provided computational support for the development of these tools.
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                  The Bibliography                       %%
+%%                                                         %%              
+%%  Bmc_article.bst  will be used to                       %%
+%%  create a .BBL file for submission, which includes      %%
+%%  XML structured for BMC.                                %%
+%%  After submission of the .TEX file,                     %%
+%%  you will be prompted to submit your .BBL file.         %%
+%%                                                         %%
+%%                                                         %%
+%%  Note that the displayed Bibliography will not          %% 
+%%  necessarily be rendered by Latex exactly as specified  %%
+%%  in the online Instructions for Authors.                %% 
+%%                                                         %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+{\ifthenelse{\boolean{publ}}{\footnotesize}{\small}
+ \bibliographystyle{bmc_article}  % Style BST file
+  \bibliography{library} }     % Bibliography file (usually '*.bib' ) 
+
+%%%%%%%%%%%
+
+\ifthenelse{\boolean{publ}}{\end{multicols}}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                               %%
+%% Figures                       %%
+%%                               %%
+%% NB: this is for captions and  %%
+%% Titles. All graphics must be  %%
+%% submitted separately and NOT  %%
+%% included in the Tex document  %%
+%%                               %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+%% Do not use \listoffigures as most will included as separate files
+
+\section*{Figures}
+  \subsection*{Figure 1 - Sample figure title}
+      A short description of the figure content
+      should go here.
+
+  \subsection*{Figure 2 - Sample figure title}
+      Figure legend text.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                               %%
+%% Tables                        %%
+%%                               %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Use of \listoftables is discouraged.
+%%
+\section*{Tables}
+  \subsection*{Table 1 - Null models and their interpretation}
+    Here is an example of a \emph{small} table in \LaTeX\ using  
+    \verb|\tabular{...}|. This is where the description of the table 
+    should go. \par \mbox{}
+    \par
+    \mbox{
+      \begin{tabular}{l l l}
+      \hline
+        \textbf{Model name} & \textbf{Works by} & \textbf{if significant}\\ \hline
+        1 & creating a random network with equal connectance & C3 \\ \hline
+        2 & ... & .. \\ \hline
+        3r & ..  & .  \\ \hline
+        3c & ..  & .  \\ \hline
+      \end{tabular}
+      }
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                               %%
+%% Additional Files              %%
+%%                               %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Additional Files}
+  \subsection*{Additional file 1 --- Sample additional file title}
+    Additional file descriptions text (including details of how to
+    view the file, if it is in a non-standard format or the file extension).  This might
+    refer to a multi-page table or a figure.
+
+  \subsection*{Additional file 2 --- Sample additional file title}
+    Additional file descriptions text.
+
+
+\end{bmcformat}
+\end{document}
+
+
+
+
+
+
+
