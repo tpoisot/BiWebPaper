@@ -39,6 +39,9 @@
 %%                                              %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=newest}
 
 %Review style settings
 %\newenvironment{bmcformat}{\begin{raggedright}\baselineskip20pt\sloppy\setboolean{publ}{false}}{\end{raggedright}\baselineskip20pt\sloppy}
@@ -298,14 +301,27 @@ Developped the software: TP, CF. Conceived the study: TP, CF, SV, JSW. Analyzed 
 %% Do not use \listoffigures as most will included as separate files
 
 \section*{Figures}
-  \subsection*{Figure 1 - Sample figure title}
-      A short description of the figure content
-      should go here.
+  \subsection*{Figure 1 - Run time for the detection of community modules}
+
+  We ran the ... Bluthgen dataset
+
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{semilogxaxis}[
+        xlabel=Run time,
+        ylabel={Modularity},
+        legend pos = north east
+        ]
+        \addplot+[only marks, mark=*] table [x = t, y = q] {contime.dat};
+        \addlegendentry{$Q_{bip}$};
+        \addplot+[only marks, mark=*] table [x = t, y = qr] {contime.dat};
+        \addlegendentry{$Q_R$};
+      \end{semilogxaxis}
+    \end{tikzpicture}
+  \end{center}
 
   \subsection*{Figure 2 - Sample figure title}
       Figure legend text.
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                               %%
